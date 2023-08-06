@@ -6,10 +6,25 @@ using UnityEngine;
 
 public class EnemyController : MonoBehaviour
 {
-    [SerializeField] private Enemy _enemy;
+    [SerializeField] private EnemyCharacter _enemy;
 
     private List<float> _lastTimes = new List<float> { 0, 0, 0, 0, 0 };
     private float _lastRecivedTime = 0;
+
+    private Player _player;
+
+    public void Init(Player player)
+    {
+        _player = player;
+        _enemy.SetSpeed(_player.speed);
+        _player.OnChange += OnChange;
+    }
+
+    public void Destroy()
+    {
+        _player.OnChange -= OnChange;
+        Destroy(gameObject);
+    }
 
     private float AverageInterval
     {
@@ -66,6 +81,14 @@ public class EnemyController : MonoBehaviour
 
                 case "vZ":
                     velocity.z = (float)dataChange.Value;
+                    break;
+
+                case "rX":
+                    _enemy.SetRotateX((float)dataChange.Value);
+                    break;
+
+                case "rY":
+                    _enemy.SetRotateY((float)dataChange.Value);
                     break;
 
                 default:

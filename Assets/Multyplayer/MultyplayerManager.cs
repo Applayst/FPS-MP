@@ -5,8 +5,8 @@ using UnityEngine;
 
 public class MultyplayerManager : ColyseusManager<MultyplayerManager>
 {
-    [SerializeField] private PlayerController _playerPrefab;
-    [SerializeField] private EnemyController _enemyPrefab;
+    [SerializeField] private PlayerCharacter _player;
+    [SerializeField] private EnemyController _enemy;
 
     private ColyseusRoom<State> _room;
 
@@ -21,7 +21,11 @@ public class MultyplayerManager : ColyseusManager<MultyplayerManager>
 
     private async void Connect()
     {
-       _room = await Instance.client.JoinOrCreate<State>("state_handler");
+        Dictionary<string, object> data = new Dictionary<string, object>() 
+        {
+            { "speed", _player.Speed}
+        };
+       _room = await Instance.client.JoinOrCreate<State>("state_handler", data); 
 
         _room.OnStateChange += OnChange;
     }
@@ -45,16 +49,17 @@ public class MultyplayerManager : ColyseusManager<MultyplayerManager>
     {        
         Vector3 position = new Vector3(player.pX, player.pY, player.pZ);
 
-        Instantiate(_playerPrefab, position, Quaternion.identity);
+        Instantiate(_player, position, Quaternion.identity);
     }
 
     private void CreateEnemy(string key, Player player)
     {
         Vector3 position = new Vector3(player.pX, player.pY, player.pZ);
 
-        EnemyController enemy = Instantiate(_enemyPrefab, position, Quaternion.identity);
-        player.OnChange += enemy.OnChange;
+        EnemyController enemy = Instantiate(_enemy, position, Quaternion.identity);
+        enemy.Init(player);
     }
+
     private void RemoveEnemy(string key, Player value)
     {
         

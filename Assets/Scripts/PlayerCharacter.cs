@@ -70,10 +70,13 @@ public class PlayerCharacter : Character
         _rigidBody.velocity = Velocity;
     }
 
-    public void GetPosition(out Vector3 position, out Vector3 velocity)
+    public void GetPosition(out Vector3 position, out Vector3 velocity, out float rotateX, out float rotateY)
     {
         position = transform.position;
         velocity = _rigidBody.velocity;
+
+        rotateY = transform.eulerAngles.y;
+        rotateX = _head.localEulerAngles.x;
     }
 
 }
