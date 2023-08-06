@@ -52,8 +52,8 @@ public class EnemyController : MonoBehaviour
     {
         SaveTime();
 
-        Vector3 position = _enemy.TargetPosition; //transform.position;
-        Vector3 velocity = Vector3.zero;
+        Vector3 position = _enemy.TargetPosition;
+        Vector3 velocity = _enemy.Velocity;
 
         foreach (var dataChange in changes)
         {
