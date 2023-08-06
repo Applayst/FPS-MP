@@ -1,12 +1,11 @@
 using Colyseus.Schema;
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class EnemyController : MonoBehaviour
 {
     [SerializeField] private EnemyCharacter _enemy;
+    [SerializeField] private EnemyGun _enemyGun;
 
     private List<float> _lastTimes = new List<float> { 0, 0, 0, 0, 0 };
     private float _lastRecivedTime = 0;
@@ -20,6 +19,12 @@ public class EnemyController : MonoBehaviour
         _player.OnChange += OnChange;
     }
 
+    public void Shoot(in ShootInfo shootInfo)
+    {
+        Vector3 position = new Vector3(shootInfo.pX, shootInfo.pY, shootInfo.pZ);
+        Vector3 velocity = new Vector3(shootInfo.dX, shootInfo.dY, shootInfo.dZ);
+        _enemyGun.Shoot(position, velocity);
+    }
     public void Destroy()
     {
         _player.OnChange -= OnChange;
