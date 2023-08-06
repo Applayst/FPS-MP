@@ -6,12 +6,23 @@ public class PlayerController : MonoBehaviour
 {
     [SerializeField] private PlayerCharacter _player;
 
+    [SerializeField] private float _mouseSensitivity = 1f;
+
     void Update()
     {
         float h = Input.GetAxisRaw("Horizontal");
         float v = Input.GetAxisRaw("Vertical");
 
-        _player.SetInput(h, v);
+        float mouseX = Input.GetAxisRaw("Mouse X");
+        float mouseY = Input.GetAxisRaw("Mouse Y");
+
+        bool space = Input.GetKeyDown(KeyCode.Space);
+
+        _player.SetInput(h, v, mouseX * _mouseSensitivity);
+        _player.RotateX(-mouseY * _mouseSensitivity);
+
+        if (space)
+            _player.Jump();
 
         SendMove();
     }
