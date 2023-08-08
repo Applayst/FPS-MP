@@ -16,6 +16,7 @@ public class EnemyController : MonoBehaviour
     {
         _player = player;
         _enemy.SetSpeed(_player.speed);
+        _enemy.SetSitMultiplier(_player.sitM);
         _player.OnChange += OnChange;
     }
 
@@ -94,6 +95,17 @@ public class EnemyController : MonoBehaviour
 
                 case "rY":
                     _enemy.SetRotateY((float)dataChange.Value);
+                    break;
+
+                case "s":
+                    if ((bool)dataChange.Value)
+                    {
+                        _enemy.SitDown();
+                    }
+                    else
+                    {
+                        _enemy.StandUp();
+                    }
                     break;
 
                 default:

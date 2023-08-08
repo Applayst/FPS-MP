@@ -5,6 +5,9 @@ public class PlayerCharacter : Character
 {
     [SerializeField] private Rigidbody _rigidBody;
     [SerializeField] private Transform _head;
+    [SerializeField] private Transform _body;
+    [SerializeField] private Transform _partPoints;
+    [SerializeField] private Transform _collider;
     [SerializeField] private Transform _cameraPoint;
     [SerializeField] private CheckFly _checkFly;
         
@@ -16,6 +19,7 @@ public class PlayerCharacter : Character
     private float _inputH;
     private float _inputV;
     private float _rotateY;
+    private bool _isSit;
     private float _currentRotateX;
     private float _jumpTime  = 0;
     
@@ -39,7 +43,23 @@ public class PlayerCharacter : Character
         _currentRotateX = Math.Clamp(_currentRotateX + value, _minVerticalAngles, _maxVerticalAngles);
         _head.localEulerAngles = new Vector3(_currentRotateX, 0, 0);
     }
-    
+
+    public void SitDown()
+    {
+        Vector3 localScale = new Vector3(1f, SitMultiplier, 1f);
+        _partPoints.localScale = localScale;
+        _body.localScale = localScale;
+        _collider.localScale = new Vector3(1f, SitMultiplier * 0.6f + 0.4f, 1f);
+        _isSit = true;
+    }
+
+    public void StandUp()
+    {
+        _partPoints.localScale = Vector3.one;
+        _body.localScale = Vector3.one;
+        _collider.localScale = Vector3.one;
+        _isSit = false;
+    }
 
     public void Jump()
     {
@@ -70,13 +90,15 @@ public class PlayerCharacter : Character
         _rigidBody.velocity = Velocity;
     }
 
-    public void GetPosition(out Vector3 position, out Vector3 velocity, out float rotateX, out float rotateY)
+    public void GetPosition(out Vector3 position, out Vector3 velocity, out float rotateX, out float rotateY, out bool isSit)
     {
         position = transform.position;
         velocity = _rigidBody.velocity;
 
         rotateY = transform.eulerAngles.y;
         rotateX = _head.localEulerAngles.x;
+
+        isSit = _isSit;
     }
 
 }

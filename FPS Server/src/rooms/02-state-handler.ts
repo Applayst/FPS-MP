@@ -29,6 +29,12 @@ export class Player extends Schema {
 
     @type("number")
     rY = 0;
+
+    @type("boolean")
+    s = false;
+
+    @type("number")
+    sitM = 0;
 }
 
 export class State extends Schema {
@@ -40,6 +46,7 @@ export class State extends Schema {
     createPlayer(sessionId: string, data: any) {
         const player = new Player();
         player.speed = data.speed;
+        player.sitM = data.sitM;
 
         this.players.set(sessionId, player);
     }
@@ -58,6 +65,7 @@ export class State extends Schema {
         player.vZ = data.vZ;
         player.rX = data.rX;
         player.rY = data.rY;
+        player.s = data.s;
     }
 }
 

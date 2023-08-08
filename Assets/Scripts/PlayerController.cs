@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] private PlayerCharacter _player;
+    [SerializeField] private PlayerCharacter _playerCharacter;
     [SerializeField] private PlayerGun _playerGun;
 
     [SerializeField] private float _mouseSensitivity = 1f;
@@ -27,16 +27,19 @@ public class PlayerController : MonoBehaviour
 
         bool mouseLeftBtn = Input.GetMouseButtonDown(0);
 
-        _player.SetInput(h, v, mouseX * _mouseSensitivity);
-        _player.RotateX(-mouseY * _mouseSensitivity);
+        _playerCharacter.SetInput(h, v, mouseX * _mouseSensitivity);
+        _playerCharacter.RotateX(-mouseY * _mouseSensitivity);
 
         if (space)
-            _player.Jump();
+            _playerCharacter.Jump();
 
         if (mouseLeftBtn && _playerGun.TryShoot(out ShootInfo shootInfo))
         {
             SendShoot(ref shootInfo);
         }
+
+        if (Input.GetKeyDown(KeyCode.LeftControl)) _playerCharacter.SitDown();
+        if (Input.GetKeyUp(KeyCode.LeftControl)) _playerCharacter.StandUp();
 
         SendMove();
     }
@@ -51,7 +54,7 @@ public class PlayerController : MonoBehaviour
 
     private void SendMove()
     {
-        _player.GetPosition(out Vector3 position, out Vector3 velocity, out float rotateX, out float rotateY);
+        _playerCharacter.GetPosition(out Vector3 position, out Vector3 velocity, out float rotateX, out float rotateY, out bool isSit);
         Dictionary<string, object> data = new Dictionary<string, object>()
         {
             { "pX", position.x}, 
@@ -63,7 +66,9 @@ public class PlayerController : MonoBehaviour
             { "vZ", velocity.z},
 
             { "rX", rotateX},
-            { "rY", rotateY}
+            { "rY", rotateY},
+
+            { "s", isSit}
         };
 
         _multyplayerManager.SendMessage("move", data);

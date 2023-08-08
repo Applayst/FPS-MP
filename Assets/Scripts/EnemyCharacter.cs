@@ -1,8 +1,12 @@
+using System;
 using UnityEngine;
 
 public class EnemyCharacter : Character
 {
     [SerializeField] private Transform _head;
+    [SerializeField] private Transform _body;
+    [SerializeField] private Transform _partPoints;
+    [SerializeField] private Transform _collider;
 
     public Vector3 TargetPosition { get; private set; } = Vector3.zero;
 
@@ -26,6 +30,8 @@ public class EnemyCharacter : Character
         }
         
     }
+
+    public void SetSitMultiplier(float sitMultiplier) => SitMultiplier = sitMultiplier;
     public void SetSpeed(float value) => Speed = value;
     public void SetMovement(in Vector3 position, in Vector3 velocity, in float averageIntervalTime)
     {
@@ -44,4 +50,19 @@ public class EnemyCharacter : Character
     {
         transform.localEulerAngles = new Vector3(0, rotateY, 0);
     }
+    public void SitDown()
+    {
+        Vector3 localScale = new Vector3(1f, SitMultiplier, 1f);
+        _partPoints.localScale = localScale;
+        _body.localScale = localScale;
+        _collider.localScale = new Vector3(1f, SitMultiplier * 0.6f + 0.4f, 1f);        
+    }
+
+    public void StandUp()
+    {
+        _partPoints.localScale = Vector3.one;
+        _body.localScale = Vector3.one;
+        _collider.localScale = Vector3.one;        
+    }
+
 }

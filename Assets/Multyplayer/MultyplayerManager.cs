@@ -22,9 +22,10 @@ public class MultyplayerManager : ColyseusManager<MultyplayerManager>
 
     private async void Connect()
     {
-        Dictionary<string, object> data = new Dictionary<string, object>() 
+        Dictionary<string, object> data = new Dictionary<string, object>()
         {
-            { "speed", _player.Speed}
+            { "speed", _player.Speed},
+            { "sitM", _player.SitMultiplier}
         };
        _room = await Instance.client.JoinOrCreate<State>("state_handler", data); 
 

@@ -34,5 +34,11 @@ public partial class Player : Schema {
 
 	[Type(8, "number")]
 	public float rY = default(float);
+
+	[Type(9, "boolean")]
+	public bool s = default(bool);
+
+	[Type(10, "number")]
+	public float sitM = default(float);
 }
 
