@@ -1,12 +1,12 @@
 using Colyseus;
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class MultyplayerManager : ColyseusManager<MultyplayerManager>
 {
-    [SerializeField] private PlayerCharacter _player;
-    [SerializeField] private EnemyController _enemy;
+    [field: SerializeField] public ScoreCounter ScoreCounter { get; private set; }
+    [SerializeField] private PlayerCharacter _playerCharacter;
+    [SerializeField] private EnemyController _enemyController;
 
     private ColyseusRoom<State> _room;
     private Dictionary<string, EnemyController> _enemies = new Dictionary<string, EnemyController>();
@@ -24,14 +24,24 @@ public class MultyplayerManager : ColyseusManager<MultyplayerManager>
     {
         Dictionary<string, object> data = new Dictionary<string, object>()
         {
-            { "speed", _player.Speed},
-            { "sitM", _player.SitMultiplier}
+            { "speed", _playerCharacter.Speed},
+            { "hp", _playerCharacter.MaxHealth},
+            { "sitM", _playerCharacter.SitMultiplier},
+            { "team", _playerCharacter.Team}
         };
        _room = await Instance.client.JoinOrCreate<State>("state_handler", data); 
 
         _room.OnStateChange += OnChange;
 
         _room.OnMessage<string>("Shoot", ApplyShoot);
+
+        _room.OnMessage<string>("score", UpdateScore);
+    }
+
+    private void UpdateScore(string jsoneScore)
+    {
+        ScoreInfo score = JsonUtility.FromJson<ScoreInfo>(jsoneScore);
+        ScoreCounter.SetTeamsScore(score.a, score.b);
     }
 
     private void ApplyShoot(string jsonShootInfo)
@@ -66,16 +76,21 @@ public class MultyplayerManager : ColyseusManager<MultyplayerManager>
     private void CreatePlayer(Player player)
     {        
         Vector3 position = new Vector3(player.pX, player.pY, player.pZ);
+                
+        PlayerCharacter playerCharacter = Instantiate(_playerCharacter, position, Quaternion.identity);
+        playerCharacter.SetTeam(player.team);
 
-        Instantiate(_player, position, Quaternion.identity);
+        player.OnChange += playerCharacter.OnChange;
+
+        _room.OnMessage<string>("Restart", playerCharacter.GetComponent<PlayerController>().Restart);
     }
 
     private void CreateEnemy(string key, Player player)
     {
         Vector3 position = new Vector3(player.pX, player.pY, player.pZ);
 
-        EnemyController enemy = Instantiate(_enemy, position, Quaternion.identity);
-        enemy.Init(player);
+        EnemyController enemy = Instantiate(_enemyController, position, Quaternion.identity);
+        enemy.Init(key, player);
 
         _enemies.Add(key, enemy);
     }
@@ -110,4 +125,9 @@ public class MultyplayerManager : ColyseusManager<MultyplayerManager>
     {
         return _room.SessionId;
     }
+}
+public struct ScoreInfo
+{
+    public int a;
+    public int b;
 }

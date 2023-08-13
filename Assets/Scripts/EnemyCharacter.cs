@@ -1,13 +1,18 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class EnemyCharacter : Character
 {
+    [SerializeField] private TeamTextUI _teamText;
+    [SerializeField] private Health _health;
     [SerializeField] private Transform _head;
     [SerializeField] private Transform _body;
     [SerializeField] private Transform _partPoints;
     [SerializeField] private Transform _collider;
+
+    private string _sessionID;
 
     public Vector3 TargetPosition { get; private set; } = Vector3.zero;
 
@@ -23,6 +28,11 @@ public class EnemyCharacter : Character
     private void Start()
     {
         TargetPosition = transform.position;    
+    }
+
+    public void Init(string sessionID)
+    {
+        _sessionID = sessionID;
     }
 
     private void Update()
@@ -60,6 +70,25 @@ public class EnemyCharacter : Character
 
     public void SetSitMultiplier(float sitMultiplier) => SitMultiplier = sitMultiplier;
     public void SetSpeed(float value) => Speed = value;
+
+    public void SetTeam(bool value)
+    {
+        Team = value;        
+        _teamText.SetTextTeam(Team);
+    }
+
+    public void SetMaxHealth(int value)
+    {
+        MaxHealth = value;
+        _health.SetMax(value);
+        _health.SetCurrent(value);
+    }
+
+    public void RestoreHP(int newValue)
+    {
+        _health.SetCurrent(newValue);
+    }
+
     public void SetMovement(in Vector3 position, in Vector3 velocity, in float averageIntervalTime)
     {
         TargetPosition = position;// + (velocity * averageIntervalTime);
@@ -116,4 +145,16 @@ public class EnemyCharacter : Character
         _isActiveCoroutine = false;
     }
 
+    public void ApplyDamage(int damage)
+    {
+        _health.ApplyDamage(damage);
+
+        Dictionary<string, object> data = new Dictionary<string, object>()
+        {
+            { "id", _sessionID},
+            { "value", damage}
+        };
+
+        MultyplayerManager.Instance.SendMessage("damage", data);
+    }
 }

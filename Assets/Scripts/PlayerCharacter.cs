@@ -1,8 +1,12 @@
+using Colyseus.Schema;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerCharacter : Character
 {
+    [SerializeField] private TeamTextUI _teamText;
+    [SerializeField] private Health _health;
     [SerializeField] private Rigidbody _rigidBody;
     [SerializeField] private Transform _head;
     [SerializeField] private Transform _body;
@@ -26,11 +30,20 @@ public class PlayerCharacter : Character
 
     private void Start()
     {
+        _health.SetMax(MaxHealth);
+        _health.SetCurrent(MaxHealth);
         Transform camera = Camera.main.transform;
         camera.parent = _cameraPoint;
         camera.localPosition = Vector3.zero;
         camera.localRotation = Quaternion.identity;        
     }
+
+    public void SetTeam(bool value)
+    {
+        Team = value;  
+        _teamText.SetTextTeam(Team);
+    }
+
     public void SetInput(float h, float v, float rotateY)
     {
         _inputH = h;
@@ -68,6 +81,23 @@ public class PlayerCharacter : Character
 
         _jumpTime = Time.time;
         _rigidBody.AddForce(0, _jumpForce, 0, ForceMode.VelocityChange);
+    }
+
+    internal void OnChange(List<DataChange> changes)
+    {
+        foreach (var dataChange in changes)
+        {
+            switch (dataChange.Field)
+            {
+                case "currentHP":
+                    _health.SetCurrent((sbyte)dataChange.Value);                    
+                    break;
+
+                default:
+                    Debug.LogWarning("Changes not apply:" + dataChange.Field);
+                    break;
+            }
+        }
     }
 
     void FixedUpdate()

@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,9 +8,12 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private PlayerCharacter _playerCharacter;
     [SerializeField] private PlayerGun _playerGun;
 
+    [SerializeField] private float _restartDelay = 3f;
     [SerializeField] private float _mouseSensitivity = 1f;
 
     private MultyplayerManager _multyplayerManager;
+
+    private bool _hold = false;
 
     private void Start()
     {
@@ -17,6 +22,8 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        if (_hold) return;
+
         float h = Input.GetAxisRaw("Horizontal");
         float v = Input.GetAxisRaw("Vertical");
 
@@ -73,9 +80,43 @@ public class PlayerController : MonoBehaviour
 
         _multyplayerManager.SendMessage("move", data);
     }
+
+    public void Restart(string jsonRestartInfo)
+    {
+        ResrtartInfo info = JsonUtility.FromJson<ResrtartInfo>(jsonRestartInfo);
+        StartCoroutine(Hold());
+
+        _playerCharacter.SetInput(0, 0, 0);
+        _playerCharacter.transform.position = new Vector3(info.x, 0, info.z);
+
+        Dictionary<string, object> data = new Dictionary<string, object>()
+        {
+            { "pX", info.x},
+            { "pY", 0},
+            { "pZ", info.z},
+
+            { "vX", 0},
+            { "vY", 0},
+            { "vZ", 0},
+
+            { "rX", 0},
+            { "rY", 0},
+
+            { "s", false}
+        };
+
+        _multyplayerManager.SendMessage("move", data);
+    }
+
+    private IEnumerator Hold()
+    {
+        _hold = true;
+        yield return new WaitForSecondsRealtime(_restartDelay);
+        _hold = false;
+    }
 }
 
-[System.Serializable]
+[Serializable]
 public struct ShootInfo
 {
     public string key;
@@ -85,4 +126,11 @@ public struct ShootInfo
     public float pX;
     public float pY;
     public float pZ;
+}
+
+[Serializable]
+public struct ResrtartInfo
+{    
+    public float x;    
+    public float z;
 }

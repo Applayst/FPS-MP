@@ -12,11 +12,14 @@ public class EnemyController : MonoBehaviour
 
     private Player _player;
 
-    public void Init(Player player)
+    public void Init(string key, Player player)
     {
+        _enemy.Init(key);
         _player = player;
         _enemy.SetSpeed(_player.speed);
         _enemy.SetSitMultiplier(_player.sitM);
+        _enemy.SetMaxHealth(_player.maxHP);
+        _enemy.SetTeam(_player.team);
         _player.OnChange += OnChange;
     }
 
@@ -65,6 +68,10 @@ public class EnemyController : MonoBehaviour
         {
             switch (dataChange.Field)
             {
+                case "currentHP":
+                    if ((sbyte)dataChange.Value > (sbyte)dataChange.PreviousValue) _enemy.RestoreHP((sbyte)dataChange.Value);
+                    break;
+
                 case "pX":
                     position.x = (float)dataChange.Value;
                     break;

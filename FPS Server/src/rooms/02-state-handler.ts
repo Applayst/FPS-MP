@@ -1,10 +1,20 @@
 import { Room, Client } from "colyseus";
 import { Schema, type, MapSchema } from "@colyseus/schema";
 
+
 export class Player extends Schema {
+
+    @type ("boolean")
+    team = true;
 
     @type("number")
     speed = 0;
+
+    @type("int8")
+    maxHP = 0;
+
+    @type("int8")
+    currentHP = 0;
 
     @type("number")
     pX = Math.floor(Math.random() * 50) - 25;
@@ -41,12 +51,22 @@ export class State extends Schema {
     @type({ map: Player })
     players = new MapSchema<Player>();
 
+    @type("uint8")
+    lossA = 0;
+
+    @type("uint8")
+    lossB = 0;
+
     something = "This attribute won't be sent to the client-side";
 
     createPlayer(sessionId: string, data: any) {
         const player = new Player();
         player.speed = data.speed;
+        player.maxHP = data.hp;
+        player.currentHP = data.hp;
         player.sitM = data.sitM;
+
+        player.team = ((this.players.size % 2) != 0);
 
         this.players.set(sessionId, player);
     }
@@ -83,6 +103,36 @@ export class StateHandlerRoom extends Room<State> {
 
         this.onMessage("shoot", (client, data) =>{
             this.broadcast("Shoot", data, {except: client});
+        });
+
+        this.onMessage("damage", (client, data) =>{
+            const clientID = data.id;
+            const player = this.state.players.get(clientID);
+            const hp = player.currentHP - data.value;
+            if (hp > 0)
+            {
+                player.currentHP = hp;
+                return;
+            }
+
+            player.team ? this.state.lossA++ : this.state.lossB++;
+            const a = this.state.lossA;
+            const b = this.state.lossB;
+            const score = JSON.stringify({a, b});
+            this.broadcast("score", score);
+
+            player.currentHP = player.maxHP;
+
+            for (var i = 0; i < this.clients.length; i++)
+            {
+                if (this.clients[i].id != clientID) continue;
+                
+                const x = Math.floor(Math.random() * 50) - 25;
+                const z = Math.floor(Math.random() * 50) - 25;
+
+                const message = JSON.stringify({x, z});
+                this.clients[i].send("Restart", message);
+            }
         });
     }
 
