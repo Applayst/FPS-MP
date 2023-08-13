@@ -5,12 +5,13 @@ using UnityEngine;
 public class EnemyController : MonoBehaviour
 {
     [SerializeField] private EnemyCharacter _enemy;
-    [SerializeField] private EnemyGun _enemyGun;
+    
 
     private List<float> _lastTimes = new List<float> { 0, 0, 0, 0, 0 };
     private float _lastRecivedTime = 0;
 
     private Player _player;
+    private EnemyGun _currentEnemyGun;    
 
     public void Init(string key, Player player)
     {
@@ -20,6 +21,7 @@ public class EnemyController : MonoBehaviour
         _enemy.SetSitMultiplier(_player.sitM);
         _enemy.SetMaxHealth(_player.maxHP);
         _enemy.SetTeam(_player.team);
+        _currentEnemyGun = _enemy.GetCurrentGun(_player.iGun);
         _player.OnChange += OnChange;
     }
 
@@ -27,7 +29,7 @@ public class EnemyController : MonoBehaviour
     {
         Vector3 position = new Vector3(shootInfo.pX, shootInfo.pY, shootInfo.pZ);
         Vector3 velocity = new Vector3(shootInfo.dX, shootInfo.dY, shootInfo.dZ);
-        _enemyGun.Shoot(position, velocity);
+        _currentEnemyGun.Shoot(position, velocity);
     }
     public void Destroy()
     {
@@ -68,6 +70,10 @@ public class EnemyController : MonoBehaviour
         {
             switch (dataChange.Field)
             {
+                case "iGun":                    
+                    _currentEnemyGun = _enemy.GetCurrentGun((sbyte)dataChange.Value);                    
+                    break;
+
                 case "currentHP":
                     if ((sbyte)dataChange.Value > (sbyte)dataChange.PreviousValue) _enemy.RestoreHP((sbyte)dataChange.Value);
                     break;

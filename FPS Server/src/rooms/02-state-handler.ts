@@ -45,6 +45,9 @@ export class Player extends Schema {
 
     @type("number")
     sitM = 0;
+
+    @type("int8")
+    iGun = 0;
 }
 
 export class State extends Schema {
@@ -87,6 +90,10 @@ export class State extends Schema {
         player.rY = data.rY;
         player.s = data.s;
     }
+    changeGun (sessionId: string, data: any) {
+        const player = this.players.get(sessionId);        
+        player.iGun = data.iGun;
+    }
 }
 
 export class StateHandlerRoom extends Room<State> {
@@ -103,6 +110,10 @@ export class StateHandlerRoom extends Room<State> {
 
         this.onMessage("shoot", (client, data) =>{
             this.broadcast("Shoot", data, {except: client});
+        });
+
+        this.onMessage("changeGun", (client, data) =>{
+            this.state.changeGun(client.sessionId, data);
         });
 
         this.onMessage("damage", (client, data) =>{

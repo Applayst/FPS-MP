@@ -5,8 +5,7 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] private PlayerCharacter _playerCharacter;
-    [SerializeField] private PlayerGun _playerGun;
+    [SerializeField] private PlayerCharacter _playerCharacter;    
 
     [SerializeField] private float _restartDelay = 3f;
     [SerializeField] private float _mouseSensitivity = 1f;
@@ -15,9 +14,14 @@ public class PlayerController : MonoBehaviour
 
     private bool _hold = false;
 
+    private PlayerGun _currentPlayerGun;
+    private int _currentGunIndex = 0;
+
     private void Start()
     {
         _multyplayerManager = MultyplayerManager.Instance;
+        _currentPlayerGun = _playerCharacter.GetCurrentGun(_currentGunIndex, out int newIndex);
+        _currentGunIndex = newIndex;
     }
 
     void Update()
@@ -30,17 +34,19 @@ public class PlayerController : MonoBehaviour
         float mouseX = Input.GetAxisRaw("Mouse X");
         float mouseY = Input.GetAxisRaw("Mouse Y");
 
-        bool space = Input.GetKeyDown(KeyCode.Space);
+        bool jump = Input.GetKeyDown(KeyCode.Space);
 
-        bool mouseLeftBtn = Input.GetMouseButtonDown(0);
+        bool shot = Input.GetMouseButtonDown(0);
+
+        bool changeGun = Input.GetKeyDown(KeyCode.E);
 
         _playerCharacter.SetInput(h, v, mouseX * _mouseSensitivity);
         _playerCharacter.RotateX(-mouseY * _mouseSensitivity);
 
-        if (space)
+        if (jump)
             _playerCharacter.Jump();
 
-        if (mouseLeftBtn && _playerGun.TryShoot(out ShootInfo shootInfo))
+        if (shot && _currentPlayerGun.TryShoot(out ShootInfo shootInfo))
         {
             SendShoot(ref shootInfo);
         }
@@ -48,7 +54,23 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.LeftControl)) _playerCharacter.SitDown();
         if (Input.GetKeyUp(KeyCode.LeftControl)) _playerCharacter.StandUp();
 
+        if (changeGun)
+        {            
+            _currentPlayerGun = _playerCharacter.GetCurrentGun(_currentGunIndex+1, out int newIndex);
+            _currentGunIndex = newIndex;
+            SendGunIndex(_currentGunIndex);
+        }
+
         SendMove();
+    }
+
+    private void SendGunIndex(int index)
+    {
+        Dictionary<string, object> data = new Dictionary<string, object>()
+        {
+            { "iGun", index}
+        };
+        _multyplayerManager.SendMessage("changeGun", data);
     }
 
     private void SendShoot(ref ShootInfo shootInfo)

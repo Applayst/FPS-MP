@@ -49,5 +49,8 @@ public partial class Player : Schema {
 
 	[Type(13, "number")]
 	public float sitM = default(float);
+
+	[Type(14, "int8")]
+	public sbyte iGun = default(sbyte);
 }
 

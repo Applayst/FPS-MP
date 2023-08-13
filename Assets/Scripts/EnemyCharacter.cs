@@ -12,6 +12,7 @@ public class EnemyCharacter : Character
     [SerializeField] private Transform _partPoints;
     [SerializeField] private Transform _collider;
 
+    [SerializeField] private EnemyGun[] _enemyGuns;    
     private string _sessionID;
 
     public Vector3 TargetPosition { get; private set; } = Vector3.zero;
@@ -66,6 +67,16 @@ public class EnemyCharacter : Character
         {
             _head.rotation = _rotationX;            
         }        
+    }
+
+    internal EnemyGun GetCurrentGun(int index)
+    {
+        for (int i = 0; i < _enemyGuns.Length; i++)
+        {
+            _enemyGuns[i].transform.gameObject.SetActive(i == index);
+        }
+
+        return _enemyGuns[index];
     }
 
     public void SetSitMultiplier(float sitMultiplier) => SitMultiplier = sitMultiplier;

@@ -19,7 +19,9 @@ public class PlayerCharacter : Character
     [SerializeField] private float _jumpTimeDelay;
     [SerializeField] private float _minVerticalAngles;
     [SerializeField] private float _maxVerticalAngles;
-    
+
+    [SerializeField] private PlayerGun[] _playerGuns;
+
     private float _inputH;
     private float _inputV;
     private float _rotateY;
@@ -36,6 +38,21 @@ public class PlayerCharacter : Character
         camera.parent = _cameraPoint;
         camera.localPosition = Vector3.zero;
         camera.localRotation = Quaternion.identity;        
+    }
+
+    public PlayerGun GetCurrentGun(int gunIndex, out int newIndex)
+    {
+        newIndex = gunIndex % _playerGuns.Length;
+        SetCurrentGun(newIndex);
+        return _playerGuns[newIndex];
+    }
+
+    private void SetCurrentGun(int gunIndex)
+    {        
+        for (int i = 0; i < _playerGuns.Length; i++)
+        {
+            _playerGuns[i].transform.gameObject.SetActive(i == gunIndex);
+        }        
     }
 
     public void SetTeam(bool value)
